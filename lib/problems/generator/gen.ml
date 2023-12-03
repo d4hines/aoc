@@ -11,6 +11,10 @@ let () =
   let output_filename = Array.get Sys.argv 1 in
   let filenames =
     Sys.argv |> Array.to_list |> List.tl |> List.tl
+    |> List.filter (fun s -> not @@ String.ends_with ~suffix:".pp.ml" s)
+  in
+  let filenames =
+    filenames
     |> List.map
          (String.mapi (fun i c -> if i = 0 then Char.uppercase_ascii c else c))
     |> List.map (fun s -> String.sub s 0 (String.length s - 3))
