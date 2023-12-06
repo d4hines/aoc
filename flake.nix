@@ -49,9 +49,10 @@
 
         devShells.default = pkgs.mkShell {
           inputsFrom = builtins.attrValues packages;
-          buildInputs = devPackages ++ [
+          buildInputs = devPackages ++ (with pkgs; [
             # You can add packages from nixpkgs here
-          ];
+            aoc-cli
+          ]);
         };
       });
 }

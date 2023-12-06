@@ -37,9 +37,7 @@ module Run_mode = struct
     in
 
     (* Check if cached input exists *)
-    let filename =
-      Filename.concat year_dir @@ Format.sprintf "%02d.txt" day
-    in
+    let filename = Filename.concat year_dir @@ Format.sprintf "%02d.txt" day in
     if Sys.file_exists filename then Ok (read_file filename)
       (* If not, fetch it from adventofcode.com *)
     else
@@ -123,8 +121,8 @@ let run_problem (module Problem : Problem.T) (run_mode : Run_mode.t)
   in
   Ok result
 
-let find_problem (year : int) (day : int) :
-    ((module Problem.T), string) result =
+let find_problem (year : int) (day : int) : ((module Problem.T), string) result
+    =
   match
     List.find_opt
       (fun (module Problem : Problem.T) ->
@@ -134,8 +132,8 @@ let find_problem (year : int) (day : int) :
   | Some p -> Ok p
   | None ->
       Error
-        (Format.sprintf "Problem (year = %d, day = %d) not implemented."
-           year day)
+        (Format.sprintf "Problem (year = %d, day = %d) not implemented." year
+           day)
 
 let run (options : Options.t) : (string, string) result =
   let@ problem = find_problem options.year options.day in

@@ -25,5 +25,7 @@
   dune
   (cmdliner(>= 1.2.0))
   (piaf (>= 0.1.0))
-  (fmt (>= 0.9.0)))
+  (fmt (>= 0.9.0))
+  ppx_expect
+  ppx_deriving)
  (tags ("advent-of-code")))
