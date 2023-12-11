@@ -1,0 +1,207 @@
+let year = 2023
+let day = 5
+
+type data = { destination_start : int; source_start : int; length : int }
+
+module Part_1 = struct
+  let run input =
+    match
+      String.trim input |> Str.split (Str.regexp ".*:") |> List.map String.trim
+    with
+    | seeds :: tl ->
+        let seeds = String.split_on_char ' ' seeds |> List.map int_of_string in
+        let tl =
+          List.map
+            (fun mapping ->
+              String.split_on_char '\n' mapping
+              |> List.map (fun line ->
+                     let nums =
+                       String.split_on_char ' ' line |> List.map int_of_string
+                     in
+                     match nums with
+                     | [ a; b; c ] ->
+                         { destination_start = a; source_start = b; length = c }
+                     | _ -> failwith "invalid input"))
+            tl
+        in
+        let map_source_to_dest (sources : int list) (destintations : data list)
+            =
+          List.map
+            (fun v ->
+              let range =
+                List.find_opt
+                  (fun { destination_start = _; source_start; length } ->
+                    v >= source_start && v <= source_start + length)
+                  destintations
+              in
+              match range with
+              | Some { destination_start; source_start; length = _ } ->
+                  destination_start + (v - source_start)
+              | None -> v)
+            sources
+        in
+        let soils = map_source_to_dest seeds (List.hd tl) in
+        let locations = List.fold_left map_source_to_dest soils (List.tl tl) in
+        let min_location = List.fold_left min Int.max_int locations in
+        Ok (string_of_int min_location)
+    | _ -> failwith "invalid format"
+
+  let%expect_test "" =
+    let input =
+      {|
+seeds: 79 14 55 13
+
+seed-to-soil map:
+50 98 2
+52 50 48
+
+soil-to-fertilizer map:
+0 15 37
+37 52 2
+39 0 15
+
+fertilizer-to-water map:
+49 53 8
+0 11 42
+42 0 7
+57 7 4
+
+water-to-light map:
+88 18 7
+18 25 70
+
+light-to-temperature map:
+45 77 23
+81 45 19
+68 64 13
+
+temperature-to-humidity map:
+0 69 1
+1 0 69
+
+humidity-to-location map:
+60 56 37
+56 93 4|}
+    in
+    let result = run input |> Result.get_ok in
+    Format.printf "%s\n" result;
+    [%expect {| 35 |}]
+end
+
+
+module Part_2 = struct
+  type range = {
+    start: int;
+    end_: int;
+    offset : bool;
+  }
+  let run input =
+    match
+      String.trim input |> Str.split (Str.regexp ".*:") |> List.map String.trim
+    with
+    | seeds :: tl ->
+        let seeds, _ =
+          List.fold_left
+            (fun (acc, left) num ->
+              let num = int_of_string num in
+              match left with
+              | Some left -> ((left, num) :: acc, None)
+              | None -> (acc, Some num))
+            ([], None)
+            (String.split_on_char ' ' seeds)
+        in
+        let tl =
+          List.map
+            (fun mapping ->
+              String.split_on_char '\n' mapping
+              |> List.map (fun line ->
+                     let nums =
+                       String.split_on_char ' ' line |> List.map int_of_string
+                     in
+                     match nums with
+                     | [ a; b; c ] ->
+                         { destination_start = a; source_start = b; length = c }
+                     | _ -> failwith "invalid input"))
+            tl
+        in
+        let _locations = List.rev tl |> List.hd |>  in
+
+        
+        let map_source_to_dest (sources : int list) (destintations : data list)
+            =
+          List.map
+            (fun v ->
+              let range =
+                List.find_opt
+                  (fun { destination_start = _; source_start; length } ->
+                    v >= source_start && v <= source_start + length)
+                  destintations
+              in
+              match range with
+              | Some { destination_start; source_start; length = _ } ->
+                  destination_start + (v - source_start)
+              | None -> v)
+            sources
+        in
+        let soils =
+          List.filter_map
+            (fun { destination_start; source_start; length } ->
+              match
+                List.find_opt
+                  (fun (seed_start, seed_range) ->
+                    if seed_start < source_start then
+                      source_start <= seed_start + seed_range
+                    else seed_start <= source_start + length)
+                  seeds
+              with
+              | Some _ -> Some destination_start
+              | None -> None)
+            (List.hd tl)
+        in
+        let locations = List.fold_left map_source_to_dest soils (List.tl tl) in
+        let min_location = List.fold_left min Int.max_int locations in
+        Ok (string_of_int min_location)
+    | _ -> failwith "invalid format"
+
+  let%expect_test "" =
+    let input =
+      {|
+seeds: 79 14 55 13
+
+seed-to-soil map:
+50 98 2
+52 50 48
+
+soil-to-fertilizer map:
+0 15 37
+37 52 2
+39 0 15
+
+fertilizer-to-water map:
+49 53 8
+0 11 42
+42 0 7
+57 7 4
+
+water-to-light map:
+88 18 7
+18 25 70
+
+light-to-temperature map:
+45 77 23
+81 45 19
+68 64 13
+
+temperature-to-humidity map:
+0 69 1
+1 0 69
+
+humidity-to-location map:
+60 56 37
+56 93 4|}
+    in
+    let result = run input |> Result.get_ok in
+    Format.printf "%s\n" result;
+    [%expect {|
+      20 |}]
+end
